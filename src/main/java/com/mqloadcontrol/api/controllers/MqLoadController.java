@@ -1,7 +1,6 @@
 package com.mqloadcontrol.api.controllers;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,16 +54,16 @@ public class MqLoadController extends RestControllerBase {
 	}
 	
 	@GetMapping(value = "/{queueName}")
-	public <T> ResponseEntity<Object> receiverListMq(@PathVariable("queueName") String queueName) throws IOException {
+	public ResponseEntity<Object> receiverListMq(@PathVariable("queueName") String queueName) throws IOException {
 		
 		logger.info("METHOD: receiverListMq");
 		String msg = null;
 		
 		try {
-			List<T> list = receiverService.receiver(queueName);
+			receiverService.receiver(queueName);
 			msg = "Lista recebida com sucesso";
 			logger.info(msg);
-			return this.getResposeSuccess(list);
+			return this.getResposeSuccess(new ResponseSuccess(msg, 200));
 		} catch (Exception e) {
 			msg = "Erro ao receber a lista";
 			logger.info(msg);

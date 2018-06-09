@@ -3,6 +3,7 @@ package com.mqloadcontrol.api.rabbit.services.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +34,29 @@ public class ReceiverServiceImpl implements ReceiverService {
 		List<T> list = new ArrayList<T>();
 
 		channel.queueDeclare(queueName, true, false, false, null);
-
+		//channel.basicGet(queueName, false); 
+		//channel.basicAck(1, true);
+		
 		Consumer consumer = new DefaultConsumer(channel) {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+			
 				list.add((T) RabbitMQConnectionUtils.convertData(body, Object.class));
 				String message = new String(body, "UTF-8");
 				logger.info(" [x] Received '" + message + "'");
+						
 			}
 		};
-		channel.basicConsume(queueName, true, consumer);
+		
+		//channel.basicConsume(queueName, true, consumer);
+		channel.basicQos(1); // Per consumer limit
+		channel.basicConsume(queueName, false, consumer);
 		return list;
+		
 	}
 	
+	@SuppressWarnings("unused")
 	private static void doWork(String task) {
 		for (char ch : task.toCharArray()) {
 			if (ch == '.') {
